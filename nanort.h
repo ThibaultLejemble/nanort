@@ -856,11 +856,11 @@ class BVHAccel {
 };
 
 // Predefined SAH predicator for triangle.
-template <typename T = float>
+template <typename T = float, typename S = int>
 class TriangleSAHPred {
  public:
   TriangleSAHPred(
-      const T *vertices, const unsigned int *faces,
+      const T *vertices, const S *faces,
       size_t vertex_stride_bytes)  // e.g. 12 for sizeof(float) * XYZ
       : axis_(0),
         pos_(static_cast<T>(0.0)),
@@ -894,9 +894,9 @@ class TriangleSAHPred {
     int axis = axis_;
     T pos = pos_;
 
-    unsigned int i0 = faces_[3 * i + 0];
-    unsigned int i1 = faces_[3 * i + 1];
-    unsigned int i2 = faces_[3 * i + 2];
+    S i0 = faces_[3 * i + 0];
+    S i1 = faces_[3 * i + 1];
+    S i2 = faces_[3 * i + 2];
 
     real3<T> p0(get_vertex_addr<T>(vertices_, i0, vertex_stride_bytes_));
     real3<T> p1(get_vertex_addr<T>(vertices_, i1, vertex_stride_bytes_));
@@ -910,16 +910,16 @@ class TriangleSAHPred {
   mutable int axis_;
   mutable T pos_;
   const T *vertices_;
-  const unsigned int *faces_;
+  const S *faces_;
   const size_t vertex_stride_bytes_;
 };
 
 // Predefined Triangle mesh geometry.
-template <typename T = float>
+template <typename T = float, typename S = int>
 class TriangleMesh {
  public:
   TriangleMesh(
-      const T *vertices, const unsigned int *faces,
+      const T *vertices, const S *faces,
       const size_t vertex_stride_bytes)  // e.g. 12 for sizeof(float) * XYZ
       : vertices_(vertices),
         faces_(faces),
@@ -929,7 +929,7 @@ class TriangleMesh {
   /// This function is called for each primitive in BVH build.
   void BoundingBox(real3<T> *bmin, real3<T> *bmax,
                    unsigned int prim_index) const {
-    unsigned vertex = faces_[3 * prim_index + 0];
+    S vertex = faces_[3 * prim_index + 0];
 
     (*bmin)[0] = get_vertex_addr(vertices_, vertex, vertex_stride_bytes_)[0];
     (*bmin)[1] = get_vertex_addr(vertices_, vertex, vertex_stride_bytes_)[1];
@@ -952,9 +952,9 @@ class TriangleMesh {
   }
 
   void BoundingBoxAndCenter(real3<T>* bmin, real3<T>* bmax, real3<T>* center, unsigned int prim_index) const {
-    unsigned int i0 = faces_[3 * prim_index + 0];
-    unsigned int i1 = faces_[3 * prim_index + 1];
-    unsigned int i2 = faces_[3 * prim_index + 2];
+    S i0 = faces_[3 * prim_index + 0];
+    S i1 = faces_[3 * prim_index + 1];
+    S i2 = faces_[3 * prim_index + 2];
 
     real3<T> p0(get_vertex_addr<T>(vertices_, i0, vertex_stride_bytes_));
     real3<T> p1(get_vertex_addr<T>(vertices_, i1, vertex_stride_bytes_));
@@ -967,7 +967,7 @@ class TriangleMesh {
   }
 
   const T *vertices_;
-  const unsigned int *faces_;
+  const S *faces_;
   const size_t vertex_stride_bytes_;
 
   //
@@ -977,7 +977,7 @@ class TriangleMesh {
     return vertices_;
   }
 
-  const unsigned int *GetFaces() const {
+  const S *GetFaces() const {
     return faces_;
   }
 
@@ -1007,7 +1007,7 @@ class TriangleIntersection {
 /// @tparam T Precision(float or double)
 /// @tparam H Intersection point information struct
 ///
-template <typename T = float, class H = TriangleIntersection<T> >
+template <typename T = float, typename S = int, class H = TriangleIntersection<T> >
 class TriangleIntersector {
  public:
 
@@ -1025,7 +1025,7 @@ class TriangleIntersector {
         faces_(m->GetFaces()),
         vertex_stride_bytes_(m->GetVertexStrideBytes()) {}
 
-  TriangleIntersector(const T *vertices, const unsigned int *faces,
+  TriangleIntersector(const T *vertices, const S *faces,
                       const size_t vertex_stride_bytes)  // e.g.
                                                          // vertex_stride_bytes
                                                          // = 12 = sizeof(float)
@@ -1058,9 +1058,9 @@ class TriangleIntersector {
       return false;
     }
 
-    const unsigned int f0 = faces_[3 * prim_index + 0];
-    const unsigned int f1 = faces_[3 * prim_index + 1];
-    const unsigned int f2 = faces_[3 * prim_index + 2];
+    const S f0 = faces_[3 * prim_index + 0];
+    const S f1 = faces_[3 * prim_index + 1];
+    const S f2 = faces_[3 * prim_index + 2];
 
     const real3<T> p0(get_vertex_addr(vertices_, f0 + 0, vertex_stride_bytes_));
     const real3<T> p1(get_vertex_addr(vertices_, f1 + 0, vertex_stride_bytes_));
@@ -1210,7 +1210,7 @@ class TriangleIntersector {
 
  private:
   const T *vertices_;
-  const unsigned int *faces_;
+  const S *faces_;
   const size_t vertex_stride_bytes_;
 
   mutable real3<T> ray_org_;
